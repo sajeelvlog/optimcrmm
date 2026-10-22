@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>OPTIM LeadFlow CRM</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ===== Login ===== -->
+<div id="loginScreen" class="login" style="display:none">
+  <form class="login-card" id="loginForm" onsubmit="doLogin(event)">
+    <div class="logo">OPTIM <span>LeadFlow</span></div>
+    <p class="muted">CMA USA + Plus One / Plus Two Commerce</p>
+    <div class="field"><label for="loginId">Login ID</label><input id="loginId" autocomplete="username" autocapitalize="none" required></div>
+    <div class="field"><label for="loginPass">Password</label><input id="loginPass" type="password" autocomplete="current-password" required></div>
+    <button class="primary full" type="submit">Sign in</button>
+    <p id="loginMsg" class="small" style="color:#c33" role="alert"></p>
+  </form>
+</div>
+
+<!-- ===== App shell ===== -->
+<div id="appEl" class="app">
+<aside class="sidebar"><div class="brand"><b>OPTIM LeadFlow</b><small>Lead Management CRM</small></div><nav id="nav" class="nav" aria-label="Main menu"></nav></aside>
+<main class="main">
+<header class="top">
+  <div class="top-left">
+    <select id="mobileNav" class="mobile" aria-label="Menu" onchange="showPage(this.value)"></select>
+    <b id="topTitle">Dashboard</b>
+  </div>
+  <div class="user">
+    <span id="liveBadge" class="live off" role="status" aria-live="polite"><i></i><span id="liveText">Connecting…</span></span>
+    <span id="onlineCount" class="small"></span>
+    <span id="userName"></span> &nbsp;
+    <button class="light action" onclick="logout()">Logout</button>
+  </div>
+</header>
+<div class="content">
+
+<section id="dashboard" class="page active">
+<div class="title"><h1>Dashboard</h1><button class="primary" onclick="openModal('leadModal')">+ Add Lead</button></div>
+<div class="cards">
+<div class="card"><div class="lbl">Total Active Leads</div><div class="num" id="kTotal">0</div></div>
+<div class="card"><div class="lbl">Today's Calls</div><div class="num" id="kCalls">0</div></div>
+<div class="card"><div class="lbl">Pending Follow-ups</div><div class="num" id="kFollow">0</div></div>
+<div class="card"><div class="lbl">Unassigned</div><div class="num" id="kUnassigned">0</div></div>
+</div>
+<div class="cards status-cards" style="margin-top:15px">
+<div class="card status hot"><div class="lbl">🔥 Very Interested</div><div class="num" id="kHot">0</div></div>
+<div class="card status interested"><div class="lbl">🟢 Interested</div><div class="num" id="kInt">0</div></div>
+<div class="card status again"><div class="lbl">🔄 Call Again</div><div class="num" id="kAgain">0</div></div>
+<div class="card status not"><div class="lbl">Not Attending</div><div class="num" id="kAttend">0</div></div>
+<div class="card status not"><div class="lbl">Not Interested</div><div class="num" id="kNot">0</div></div>
+</div>
+<div class="panel"><h3>Today's priority follow-ups</h3><div id="todayTable"></div></div>
+</section>
+
+<section id="today" class="page"><div class="title"><h1>Start Today</h1><span class="muted" id="todayDate"></span></div><div class="panel"><div class="toolbar"><select id="todaySchool" aria-label="Filter by school" onchange="renderToday()"></select><select id="todayStatus" aria-label="Filter by status" onchange="renderToday()"></select></div><div id="todayLeads"></div></div></section>
+
+<section id="myLeads" class="page"><div class="title"><h1>My Leads</h1><button class="primary" onclick="showPage('today')">Start Today</button></div><div class="panel"><div class="toolbar"><input id="mySearch" placeholder="Search name / phone..." aria-label="Search my leads" oninput="renderMyLeads()"><select id="myFilter" aria-label="Filter by status" onchange="renderMyLeads()"></select></div><div id="myLeadsTable"></div></div></section>
+
+<section id="followups" class="page"><div class="title"><h1>Follow-ups</h1></div><div class="panel"><div class="toolbar"><input type="date" id="followDate" aria-label="Follow-up date" onchange="renderFollowups()"><select id="followFilter" aria-label="Filter by status" onchange="renderFollowups()"></select></div><div id="followTable"></div></div></section>
+
+<section id="history" class="page"><div class="title"><h1>Call History</h1></div><div class="panel"><div id="historyTable"></div></div></section>
+
+<section id="leads" class="page"><div class="title"><h1>All Leads</h1><button class="primary" onclick="openModal('leadModal')">+ Add Lead</button></div><div class="panel"><div class="toolbar"><input id="leadSearch" placeholder="Search..." aria-label="Search leads" oninput="renderLeads()"><select id="leadSchool" aria-label="Filter by source" onchange="renderLeads()"></select><select id="leadAssign" aria-label="Filter by staff" onchange="renderLeads()"></select></div><div id="leadsTable"></div></div></section>
+
+<section id="import" class="page"><div class="title"><h1>Upload &amp; Activate Leads</h1></div><div class="panel">
+<div class="tabs"><button class="sel" onclick="setImportType('School',this)">School</button><button onclick="setImportType('College',this)">College</button></div>
+<div class="grid2"><div><div class="field"><label for="importSource">Select School / College</label><select id="importSource"></select></div><div class="file"><b>CSV file</b><p class="muted small">Columns: Name, Class, Phone 1, Phone 2 (in Excel: File → Save As → CSV)</p><input type="file" id="csvFile" accept=".csv" aria-label="Choose CSV file" onchange="importFile(event)"></div></div><div><h3>Preview</h3><div id="preview" class="small empty">Upload a CSV file to preview records.</div></div></div>
+<div style="margin-top:16px"><button class="primary" onclick="activateImported()">Activate Data to Calling</button></div></div></section>
+
+<section id="assign" class="page"><div class="title"><h1>Assign Leads</h1></div><div class="panel"><div class="toolbar"><select id="assignSchool" aria-label="Filter by school or college" onchange="renderAssign()"></select><select id="assignStaff" aria-label="Staff to assign to"></select><button class="primary" onclick="assignSelected()">Assign Selected</button></div><div id="assignTable"></div></div></section>
+
+<section id="sources" class="page"><div class="title"><h1>Schools &amp; Colleges</h1><button class="primary" onclick="openModal('sourceModal')">+ Add School / College</button></div><div class="panel"><div id="sourcesTable"></div></div></section>
+
+<section id="staff" class="page"><div class="title"><h1>Telecallers</h1><button class="primary" onclick="openModal('staffModal')">+ Add Staff</button></div><div class="panel"><div id="staffTable"></div></div></section>
+
+<section id="activity" class="page"><div class="title"><h1>Call Activity</h1><span class="muted small">Updates live as staff save calls</span></div><div class="panel"><div id="activityTable"></div></div></section>
+
+<section id="reports" class="page"><div class="title"><h1>Reports</h1></div><div class="cards" id="reportCards"></div><div class="panel"><h3>Staff performance</h3><div id="reportTable"></div></div></section>
+
+<section id="settings" class="page"><div class="title"><h1>Settings</h1></div>
+<div class="panel"><h3>Call outcome settings</h3><div class="toolbar"><input id="newStatus" placeholder="Add outcome" aria-label="New outcome name"><button class="primary" onclick="addStatus()">Add</button></div><div id="statusSettings"></div></div>
+<div class="panel" id="migratePanel" style="display:none"><h3>Import data from the old version</h3><p class="muted">This browser still holds data saved by the old single-file CRM. Import it once into the shared server database (staff passwords are stored securely hashed).</p><button class="primary" onclick="migrateOld()">Import old browser data</button></div>
+</section>
+
+</div></main></div>
+
+<!-- ===== Modals ===== -->
+<div id="leadModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="leadModalTitle"><div class="modalbox"><div class="modalhead"><h2 id="leadModalTitle">Add Lead</h2><button class="close" aria-label="Close" onclick="closeModal('leadModal')">×</button></div>
+<div class="grid2"><div class="field"><label for="ln">Name</label><input id="ln"></div><div class="field"><label for="lc">Class</label><input id="lc" placeholder="Plus One / Plus Two / CMA"></div><div class="field"><label for="lp1">Phone 1</label><input id="lp1" inputmode="tel"></div><div class="field"><label for="lp2">Phone 2</label><input id="lp2" inputmode="tel"></div><div class="field"><label for="ls">School / College</label><select id="ls"></select></div><div class="field"><label for="lcamp">Campus</label><input id="lcamp"></div></div><button class="primary" onclick="saveLead()">Save Lead</button></div></div>
+
+<div id="sourceModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="sourceModalTitle"><div class="modalbox"><div class="modalhead"><h2 id="sourceModalTitle">Add School / College</h2><button class="close" aria-label="Close" onclick="closeModal('sourceModal')">×</button></div><div class="field"><label for="st">Type</label><select id="st"><option>School</option><option>College</option></select></div><div class="field"><label for="sn">Name</label><input id="sn"></div><div class="field"><label for="scampus">Campus</label><input id="scampus"></div><button class="primary" onclick="saveSource()">Save</button></div></div>
+
+<div id="staffModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="staffModalTitle"><div class="modalbox"><div class="modalhead"><h2 id="staffModalTitle">Add Telecaller</h2><button class="close" aria-label="Close" onclick="closeModal('staffModal')">×</button></div><div class="grid2"><div class="field"><label for="staffName">Name</label><input id="staffName"></div><div class="field"><label for="staffId">Login ID</label><input id="staffId" autocapitalize="none"></div><div class="field"><label for="staffPass">Password</label><input id="staffPass" autocomplete="new-password"></div><div class="field"><label for="staffRole">Role</label><select id="staffRole"><option>Telecaller</option><option>Manager</option></select></div></div><button class="primary" onclick="saveStaff()">Create Account</button></div></div>
+
+<div id="callModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="callModalTitle"><div class="modalbox"><div class="modalhead"><h2 id="callModalTitle">Update Call</h2><button class="close" aria-label="Close" onclick="closeModal('callModal')">×</button></div><div id="callLeadInfo"></div>
+<div class="grid2"><div class="field"><label for="callStatus">Call outcome</label><select id="callStatus"></select></div><div class="field"><label for="nextDate">Next call date</label><input type="date" id="nextDate"></div><div class="field"><label for="nextTime">Next call time</label><input type="time" id="nextTime"></div><div class="field"><label for="remarks">Remarks</label><input id="remarks"></div></div><button class="primary" onclick="saveCall()">Save Call Update</button></div></div>
+
+<!-- live notifications -->
+<div id="toasts" class="toasts" aria-live="polite" aria-atomic="false"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script src="config.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
