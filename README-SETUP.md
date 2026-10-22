@@ -27,7 +27,7 @@ For each staff member, add a Firebase Authentication user with email such as `st
 Open Firestore → Rules, paste `firestore.rules`, and publish. **Important:** this is a functional real-time starter, not a hardened production security model. Because the current UI stores the dataset in one shared document, any authenticated staff user can technically modify more shared data than the UI exposes. Before importing real student personal data or using this with a live team, move writes to a trusted backend (e.g. Cloud Functions) and enforce per-role/per-lead authorization. Never put admin credentials in website code.
 
 ## 5. Deploy on Netlify
-1. Keep `index.html`, `firebase-config.js`, and `firestore.rules` in the same folder.
+1. Keep `index.html`, `style.css`, `script.js`, `firebase-config.js`, and `firestore.rules` in the same folder.
 2. Replace every placeholder in `firebase-config.js` with your real Firebase web-app config.
 3. Go to https://app.netlify.com/drop and drag the folder or ZIP into the deploy area.
 4. Test in two separate browsers/devices: make an update in one session and verify it appears in the other.
